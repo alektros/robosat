@@ -9,11 +9,12 @@ from robosat.tiles import tiles_from_slippy_map
 from robosat.config import load_config
 
 from robosat.features.parking import ParkingHandler
+from robosat.features.building import BuildingHandler
 
 
 # Register post-processing handlers here; they need to support a `apply(tile, mask)` function
 # for handling one mask and a `save(path)` function for GeoJSON serialization to a file.
-handlers = {"parking": ParkingHandler}
+handlers = {"parking": ParkingHandler, 'building' : BuildingHandler}
 
 
 def add_parser(subparser):
@@ -35,7 +36,9 @@ def main(args):
     dataset = load_config(args.dataset)
 
     labels = dataset["common"]["classes"]
-    assert set(labels).issuperset(set(handlers.keys())), "handlers have a class label"
+    print(labels)
+    print(handlers.keys())
+    #assert set(labels).issuperset(set(handlers.keys())), "handlers have a class label"
     index = labels.index(args.type)
 
     handler = handlers[args.type]()

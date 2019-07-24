@@ -40,6 +40,7 @@ predictor = None
 tiles = None
 token = None
 size = None
+zoom = None
 
 
 @app.route("/")
@@ -51,7 +52,7 @@ def index():
 def tile(z, x, y):
 
     # Todo: predictor should take care of zoom levels
-    if z != 18:
+    if z != zoom:
         abort(404)
 
     tile = mercantile.Tile(x, y, z)
@@ -91,6 +92,7 @@ def add_parser(subparser):
     parser.add_argument("--tile_size", type=int, default=512, help="tile size for slippy map tiles")
     parser.add_argument("--host", type=str, default="127.0.0.1", help="host to serve on")
     parser.add_argument("--port", type=int, default=5000, help="port to serve on")
+    parser.add_argument("--zoom", type=int, default=18, help="port to serve on")
 
     parser.set_defaults(func=main)
 
@@ -106,6 +108,9 @@ def main(args):
 
     global size
     size = args.tile_size
+
+    global zoom
+    zoom = args.zoom
 
     global token
     token = os.getenv("MAPBOX_ACCESS_TOKEN")
