@@ -81,6 +81,10 @@ If you want to contribute, see the [contributing section](#contributing) for mor
 
 
 ## Installation
+Build from docker file:
+
+    sudo docker build -t alektros/robosat:latest-gpu -f docker/Dockerfile.gpu .
+
 
 We provide pre-built Docker images for both CPU as well as GPU environments on Docker Hub in [mapbox/robosat](https://hub.docker.com/r/mapbox/robosat/tags/).
 
@@ -90,7 +94,7 @@ Using a CPU container to show all available sub-commands
 
 Using a GPU container (requires [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) on the host) to train a model
 
-    docker run --runtime=nvidia -it --rm -v $PWD:/data --ipc=host mapbox/robosat:latest-gpu train --model /data/model.toml --dataset /data/dataset.toml --workers 4
+   docker run --runtime=nvidia -it --rm -v $PWD:/data --ipc=host mapbox/robosat:latest-gpu train --model /data/model.toml --dataset /data/dataset.toml --workers 4
 
 Arguments
 - `--runtime=nvidia` enables the nvidia-docker runtime for access to host GPUs
