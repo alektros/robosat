@@ -3,6 +3,7 @@ import collections
 import json
 import os
 import sys
+import random
 
 import numpy as np
 from PIL import Image
@@ -16,7 +17,7 @@ from rasterio.warp import transform
 from supermercado import burntiles
 
 from robosat.config import load_config
-from robosat.colors import make_palette
+from robosat.colors import make_palette, randomrgb,make_palette_with_random, randomgrayscale
 from robosat.tiles import tiles_from_csv
 
 
@@ -74,8 +75,16 @@ def burn(tile, features, size):
     """
 
     # the value you want in the output raster where a shape exists
+    #random.randint(0,100000)
     burnval = 1
-    shapes = ((geometry, burnval) for feature in features for geometry in feature_to_mercator(feature))
+    geometry_list = []
+
+    def add(geometry_list, geometry):
+        geometry_list.append(geometry)
+        return len(geometry_list)
+
+    shapes = ((geometry, add(geometry_list, geometry)) for feature in features for geometry in feature_to_mercator(feature))
+
 
     bounds = mercantile.xy_bounds(tile)
     transform = from_bounds(*bounds, size, size)
@@ -134,7 +143,13 @@ def main(args):
 
         out = Image.fromarray(out, mode="P")
 
-        palette = make_palette(bg, fg)
+        # palette = make_palette(bg, fg)
+        # random_colors = [randomrgb(),randomrgb(),randomrgb()]
+        random_colors = []
+        for graycolor in randomgrayscale():
+            random_colors.append(graycolor)
+        palette = make_palette_with_random(bg, random_colors=random_colors)
+        
         out.putpalette(palette)
 
         out.save(out_path, optimize=True)

@@ -2,6 +2,7 @@
 """
 
 import colorsys
+import numpy as np
 
 from enum import Enum, unique
 
@@ -15,6 +16,16 @@ def _rgb(v):
     return int(r, 16), int(g, 16), int(b, 16)
 
 
+def randomrgb():
+    return tuple(np.random.choice(range(256), size=3))
+
+def randomgrayscale():
+    scales = []
+    for value in range(0,256,10):
+        scales.insert(0, (value,value,value))        
+    return scales
+
+
 @unique
 class Mapbox(Enum):
     """Mapbox-themed colors.
@@ -26,6 +37,7 @@ class Mapbox(Enum):
     gray = _rgb("#eeeeee")
     light = _rgb("#f8f8f8")
     white = _rgb("#ffffff")
+    black = _rgb("#000000")
     cyan = _rgb("#3bb2d0")
     blue = _rgb("#3887be")
     bluedark = _rgb("#223b53")
@@ -53,6 +65,19 @@ def make_palette(*colors):
     flattened = sum(rgbs, ())
     return list(flattened)
 
+def make_palette_with_random(*colors, random_colors):
+    """Builds a PIL-compatible color palette from color names.
+
+    Args:
+      colors: variable number of color names.
+    """
+
+    rgbs = [Mapbox[color].value for color in colors]
+    for random_color in random_colors:
+      rgbs.append(random_color)
+    flattened = sum(rgbs, ())
+    return list(flattened)
+
 
 def color_string_to_rgb(color):
     """Convert color string to a list of RBG integers.
@@ -65,7 +90,6 @@ def color_string_to_rgb(color):
     """
 
     return [*map(int, color.split(","))]
-
 
 def continuous_palette_for_color(color, bins=256):
     """Creates a continuous color palette based on a single color.
