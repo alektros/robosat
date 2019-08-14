@@ -106,8 +106,6 @@ def main(args):
 
     os.makedirs(args.out, exist_ok=True)
 
-    print(args)
-
     # We can only rasterize all tiles at a single zoom.
     assert all(tile.z == args.zoom for tile in tiles_from_csv(args.tiles))
 
