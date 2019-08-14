@@ -32,7 +32,8 @@ def add_parser(subparser):
     parser.add_argument("--dataset", type=str, required=True, help="path to dataset configuration file")
     parser.add_argument("--zoom", type=int, required=True, help="zoom level of tiles")
     parser.add_argument("--size", type=int, default=512, help="size of rasterized image tiles in pixels")
-
+    parser.add_argument("--multicolors", type=bool, default=False, help="use grayscale multicolors")
+ 
     parser.set_defaults(func=main)
 
 
@@ -62,7 +63,7 @@ def feature_to_mercator(feature):
             yield {"coordinates": list(xys), "type": "Polygon"}
 
 
-def burn(tile, features, size):
+def burn(tile, features, size, multicolors):
     """Burn tile with features.
 
     Args:
@@ -73,17 +74,17 @@ def burn(tile, features, size):
     Returns:
       image: rasterized file of size with features burned.
     """
+    
+    if multicolors is True:
+        geometry_list = []
+        def add(geometry_list, geometry):
+            geometry_list.append(geometry)
+            return len(geometry_list)
+        shapes = ((geometry, add(geometry_list, geometry)) for feature in features for geometry in feature_to_mercator(feature))
 
-    # the value you want in the output raster where a shape exists
-    #random.randint(0,100000)
-    burnval = 1
-    geometry_list = []
-
-    def add(geometry_list, geometry):
-        geometry_list.append(geometry)
-        return len(geometry_list)
-
-    shapes = ((geometry, add(geometry_list, geometry)) for feature in features for geometry in feature_to_mercator(feature))
+    else:
+        burnval = 1
+        shapes = ((geometry, burnval) for feature in features for geometry in feature_to_mercator(feature))
 
 
     bounds = mercantile.xy_bounds(tile)
@@ -104,6 +105,8 @@ def main(args):
     fg = colors[1]
 
     os.makedirs(args.out, exist_ok=True)
+
+    print(args)
 
     # We can only rasterize all tiles at a single zoom.
     assert all(tile.z == args.zoom for tile in tiles_from_csv(args.tiles))
@@ -128,7 +131,7 @@ def main(args):
     # Burn features to tiles and write to a slippy map directory.
     for tile in tqdm(list(tiles_from_csv(args.tiles)), ascii=True, unit="tile"):
         if tile in feature_map:
-            out = burn(tile, feature_map[tile], args.size)
+            out = burn(tile, feature_map[tile], args.size,args.multicolors)
         else:
             out = np.zeros(shape=(args.size, args.size), dtype=np.uint8)
 
@@ -143,13 +146,14 @@ def main(args):
 
         out = Image.fromarray(out, mode="P")
 
-        # palette = make_palette(bg, fg)
-        # random_colors = [randomrgb(),randomrgb(),randomrgb()]
-        random_colors = []
-        for graycolor in randomgrayscale():
-            random_colors.append(graycolor)
-        palette = make_palette_with_random(bg, random_colors=random_colors)
-        
+        if args.multicolors is True:
+            random_colors = []
+            for graycolor in randomgrayscale():
+                random_colors.append(graycolor)
+            palette = make_palette_with_random(bg, random_colors=random_colors)
+        else:
+            palette = make_palette(bg, fg)
+
         out.putpalette(palette)
 
         out.save(out_path, optimize=True)
