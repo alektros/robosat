@@ -19,7 +19,7 @@ handlers = {"parking": ParkingHandler, 'building' : BuildingHandler}
 
 def add_parser(subparser):
     parser = subparser.add_parser(
-        "features",
+        "features-splitted",
         help="extracts simplified GeoJSON features from segmentation masks",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
@@ -33,12 +33,16 @@ def add_parser(subparser):
 
 
 def main(args):
+    print ('Splitted')
     handler = handlers[args.type]()
 
     tiles = list(tiles_from_slippy_map(args.masks))
+    #for tile in tiles:
+    #    print (tile)
+    
 
     for tile, path in tqdm(tiles, ascii=True, unit="mask"):
         image = np.array(Image.open(path).convert("L"), dtype=np.uint8)
-        handler.apply(tile, image)
+        handler.apply(tile, image,path)
 
     handler.save(args.out)

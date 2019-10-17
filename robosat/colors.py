@@ -52,6 +52,8 @@ class Mapbox(Enum):
     orange = _rgb("#f9886c")
     red = _rgb("#e55e5e")
     pink = _rgb("#ed6498")
+    building = _rgb("#00baff")
+
 
 
 def make_palette(*colors):

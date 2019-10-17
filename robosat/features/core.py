@@ -72,7 +72,6 @@ def denoise(mask, eps):
     Returns:
       The mask after applying denoising.
     """
-
     struct = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (eps, eps))
     return cv2.morphologyEx(mask, cv2.MORPH_OPEN, struct)
 

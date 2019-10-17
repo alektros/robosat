@@ -79,19 +79,93 @@ def burn(tile, features, size, multicolors):
         geometry_list = []
         def add(geometry_list, geometry):
             geometry_list.append(geometry)
-            return len(geometry_list)
+            return 1 + len(geometry_list)
         shapes = ((geometry, add(geometry_list, geometry)) for feature in features for geometry in feature_to_mercator(feature))
 
     else:
         burnval = 1
         shapes = ((geometry, burnval) for feature in features for geometry in feature_to_mercator(feature))
 
-
     bounds = mercantile.xy_bounds(tile)
     transform = from_bounds(*bounds, size, size)
 
     return rasterize(shapes, out_shape=(size, size), transform=transform)
 
+def burn_single(tile, feature, size, multicolors):
+    bounds = mercantile.xy_bounds(tile)
+    transform = from_bounds(*bounds, size, size)
+
+    return rasterize(feature_to_mercator(feature), out_shape=(size, size), transform=transform)
+
+
+def multi_burning(args,feature_map, bg, fg):
+        # Burn features to tiles and write to a slippy map directory.
+    for tile in tqdm(list(tiles_from_csv(args.tiles)), ascii=True, unit="tile"):
+        if tile in feature_map:
+            out = burn(tile, feature_map[tile], args.size,args.multicolors)
+        else:
+            out = np.zeros(shape=(args.size, args.size), dtype=np.uint8)
+
+        out_dir = os.path.join(args.out, str(tile.z), str(tile.x))
+        os.makedirs(out_dir, exist_ok=True)
+
+        out_path = os.path.join(out_dir, "{}.png".format(tile.y))
+
+        if os.path.exists(out_path):
+            prev = np.array(Image.open(out_path))
+            out = np.maximum(out, prev)
+
+        out = Image.fromarray(out, mode="P")
+
+        if args.multicolors is True:
+            random_colors = []
+            for graycolor in randomgrayscale():
+                random_colors.append(graycolor)
+            palette = make_palette_with_random(bg, random_colors=random_colors)
+        else:
+            palette = make_palette(bg, fg)
+
+        out.putpalette(palette)
+
+        out.save(out_path, optimize=True)
+
+def save_out(out, args, tile, bg, fg,index):
+    out_dir = os.path.join(args.out, str(tile.z), str(tile.x))
+    os.makedirs(out_dir, exist_ok=True)
+
+    out_path = os.path.join(out_dir, "{}_{}.png".format(tile.y,index))
+
+    if os.path.exists(out_path):
+        prev = np.array(Image.open(out_path))
+        out = np.maximum(out, prev)
+
+    out = Image.fromarray(out, mode="P")
+
+    if args.multicolors is True:
+        random_colors = []
+        for graycolor in randomgrayscale():
+            random_colors.append(graycolor)
+        palette = make_palette_with_random(bg, random_colors=random_colors)
+    else:
+        palette = make_palette(bg, fg)
+
+    out.putpalette(palette)
+
+    out.save(out_path, optimize=True)
+
+
+def single_burning(args,feature_map, bg, fg):
+        # Burn features to tiles and write to a slippy map directory.
+    for tile in tqdm(list(tiles_from_csv(args.tiles)), ascii=True, unit="tile"):
+        if tile in feature_map:
+            index = 0
+            for feature in feature_map[tile]:
+                out = burn_single(tile, feature, args.size,args.multicolors)
+                save_out(out, args, tile, bg, fg, index)
+                index = index + 1
+        else:
+            out = np.zeros(shape=(args.size, args.size), dtype=np.uint8)        
+            save_out(out, args, tile, bg, fg, 0)
 
 def main(args):
     dataset = load_config(args.dataset)
@@ -125,33 +199,7 @@ def main(args):
         except ValueError as e:
             print("Warning: invalid feature {}, skipping".format(i), file=sys.stderr)
             continue
+    
+    single_burning(args, feature_map, bg, fg)
 
-    # Burn features to tiles and write to a slippy map directory.
-    for tile in tqdm(list(tiles_from_csv(args.tiles)), ascii=True, unit="tile"):
-        if tile in feature_map:
-            out = burn(tile, feature_map[tile], args.size,args.multicolors)
-        else:
-            out = np.zeros(shape=(args.size, args.size), dtype=np.uint8)
 
-        out_dir = os.path.join(args.out, str(tile.z), str(tile.x))
-        os.makedirs(out_dir, exist_ok=True)
-
-        out_path = os.path.join(out_dir, "{}.png".format(tile.y))
-
-        if os.path.exists(out_path):
-            prev = np.array(Image.open(out_path))
-            out = np.maximum(out, prev)
-
-        out = Image.fromarray(out, mode="P")
-
-        if args.multicolors is True:
-            random_colors = []
-            for graycolor in randomgrayscale():
-                random_colors.append(graycolor)
-            palette = make_palette_with_random(bg, random_colors=random_colors)
-        else:
-            palette = make_palette(bg, fg)
-
-        out.putpalette(palette)
-
-        out.save(out_path, optimize=True)

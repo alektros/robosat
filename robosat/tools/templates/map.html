@@ -61,23 +61,54 @@ var afterMap = new mapboxgl.Map({
   maxZoom: 20,
   hash: true,
   style: 'mapbox://styles/mapbox/satellite-v9'
-});
+}); 
 
 var map = new mapboxgl.Compare(beforeMap, afterMap, {});
 
 afterMap.on('load', function() {
   afterMap.addLayer({
+    'id': 'yandex',
+    'type': 'raster',
+    'source': {
+      'type': 'raster',
+      // 'tiles': [ 'https://core-sat.maps.yandex.net/tiles?l=sat&v=3.493.0&x={x}&y={y}&z={z}&lang=ru_RU' ],
+      'tiles':['http://localhost:8585/images/{z}/{x}/{y}.png'],
+      'tileSize': {{ size }}
+    }
+  });
+  afterMap.addLayer({
     'id': 'robosat',
     'type': 'raster',
     'source': {
       'type': 'raster',
-      'tiles': [ 'http://127.0.0.1:5000/{z}/{x}/{y}.png' ],
+       'tiles': [ 'http://127.0.0.1:5000/{z}/{x}/{y}.png' ],
+      //'tiles':['http://localhost:8585/images/{z}/{x}/{y}.png'],
       'tileSize': {{ size }}
     }
   });
 
   afterMap.setPaintProperty('robosat', 'raster-opacity', 0.6);
+
+
 });
+
+beforeMap.on('load', function() {
+  beforeMap.addLayer({
+    'id': 'robosat',
+    'type': 'raster',
+    'source': {
+      'type': 'raster',
+      // 'tiles': [ 'https://core-sat.maps.yandex.net/tiles?l=sat&v=3.493.0&x={x}&y={y}&z={z}&lang=ru_RU' ],
+      'tiles':['http://localhost:8585/images/{z}/{x}/{y}.png'],
+      'tileSize': {{ size }}
+    }
+  });
+
+
+  beforeMap.setPaintProperty('robosat', 'raster-opacity', 1);
+
+});
+
 </script>
 
 </body>

@@ -38,7 +38,7 @@ app = Flask(__name__)
 session = None
 predictor = None
 tiles = None
-token = None
+token = 'pk.eyJ1IjoiYWxla3Ryb3MiLCJhIjoiY2p5Zmk1aHlkMWNqdDNicGIyNnpmbnpqaSJ9.UFigDZYof27o4YfgWjVGqQ'
 size = None
 zoom = None
 
@@ -52,6 +52,7 @@ def index():
 def tile(z, x, y):
 
     # Todo: predictor should take care of zoom levels
+    
     if z != zoom:
         abort(404)
 
@@ -61,6 +62,7 @@ def tile(z, x, y):
     res = fetch_image(session, url)
 
     if not res:
+        print ('here 2')
         abort(500)
 
     image = Image.open(res)
@@ -112,8 +114,8 @@ def main(args):
     global zoom
     zoom = args.zoom
 
-    global token
-    token = os.getenv("MAPBOX_ACCESS_TOKEN")
+    #global token
+    #token = os.getenv("MAPBOX_ACCESS_TOKEN")
 
     if not token:
         sys.exit("Error: map token needed visualizing results; export MAPBOX_ACCESS_TOKEN")

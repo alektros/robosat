@@ -1,8 +1,8 @@
 import sys
 import collections
-
+import os
 import geojson
-
+import json
 import shapely.geometry
 
 from robosat.features.core import denoise, grow, contours, simplify, featurize, parents_in_hierarchy
@@ -16,7 +16,10 @@ class BuildingHandler:
     def __init__(self):
         self.features = []
 
-    def apply(self, tile, mask):
+    def apply(self, tile, mask, mask_path):
+
+        
+
         #if tile.z != 18:
         #    raise NotImplementedError("Parking lot post-processing thresholds are tuned for z18")
 
@@ -38,8 +41,11 @@ class BuildingHandler:
 
         multipolygons, hierarchy = contours(grown)
 
+
         if hierarchy is None:
             return
+
+        
 
         # In the following we re-construct the hierarchy walking from polygons up to the top-most polygon.
         # We then crete a GeoJSON polygon with a single outer ring and potentially multiple inner rings.
@@ -95,12 +101,27 @@ class BuildingHandler:
             shape = shapely.geometry.shape(geometry)
 
             if shape.is_valid:
-                self.features.append(geojson.Feature(geometry=geometry))
+                
+                feature = geojson.Feature(geometry=geometry)
+                
+                json_path = os.path.splitext(mask_path)[0].split('_')[0]
+                json_path = json_path + '.json'
+                if os.path.isfile(json_path):
+                    json = self.parse_json(json_path)
+                    tile_name =os.path.splitext(os.path.basename(mask_path))[0]
+                    feature.properties['data'] = json[tile_name]
+
+                self.features.append(feature)
             else:
                 print("Warning: extracted feature is not valid, skipping", file=sys.stderr)
+
 
     def save(self, out):
         collection = geojson.FeatureCollection(self.features)
 
         with open(out, "w") as fp:
             geojson.dump(collection, fp)
+
+    def parse_json(self, json_path):
+        with open(json_path, "r") as read_file:
+            return json.load(read_file)

@@ -56,9 +56,11 @@ def fetch_image(session, url, timeout=10):
 
     try:
         resp = session.get(url, timeout=timeout)
+        print ('before raise')
         resp.raise_for_status()
         return io.BytesIO(resp.content)
-    except Exception:
+    except Exception as e:
+        print (url + str(e))
         return None
 
 
@@ -90,8 +92,11 @@ def tiles_from_slippy_map(root):
                 continue
 
             for name in os.listdir(os.path.join(root, z, x)):
-                y = os.path.splitext(name)[0]
 
+                if 'json' in os.path.splitext(name)[1]:
+                    continue 
+                y = os.path.splitext(name)[0]
+                y = y.split('_')[0]
                 if not isdigit(y):
                     continue
 
