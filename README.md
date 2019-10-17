@@ -83,7 +83,7 @@ If you want to contribute, see the [contributing section](#contributing) for mor
 ## Installation
 Build from docker file:
 
-    sudo docker build -t alektros/robosat:latest-gpu -f docker/Dockerfile.gpu .
+    sudo docker build -t funreality/robosat:latest-gpu -f docker/Dockerfile.gpu .
 
 
 We provide pre-built Docker images for both CPU as well as GPU environments on Docker Hub in [mapbox/robosat](https://hub.docker.com/r/mapbox/robosat/tags/).

@@ -21,5 +21,6 @@ RUN python3 -c "from torchvision.models import resnet50; resnet50(True)"
 
 COPY . .
 
-ENTRYPOINT ["/usr/src/app/rs"]
-CMD ["-h"]
+# ENTRYPOINT ["/usr/src/app/rs"]
+# CMD ["-h"]
+CMD ["python", "-u","server.py"]
