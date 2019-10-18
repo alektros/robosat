@@ -33,7 +33,9 @@ def add_parser(subparser):
 
 
 def main(args):
+    '''
     print ('Splitted')
+
     handler = handlers[args.type]()
 
     tiles = list(tiles_from_slippy_map(args.masks))
@@ -46,3 +48,17 @@ def main(args):
         handler.apply(tile, image,path)
 
     handler.save(args.out)
+'''
+    features_splitted(args.masks, args.out, args.type, args.dataset)
+
+def features_splitted(masks, out, type, dataset):
+    print ('Splitted')
+    handler = handlers[type]()
+
+    tiles = list(tiles_from_slippy_map(masks))
+
+    for tile, path in tqdm(tiles, ascii=True, unit="mask"):
+        image = np.array(Image.open(path).convert("L"), dtype=np.uint8)
+        handler.apply(tile, image, path)
+
+    handler.save(out)
