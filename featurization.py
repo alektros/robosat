@@ -16,6 +16,8 @@ def _vectorize_dir(masks_dir, result_dir, result_name):
     '''
     pass
 
+    features_splitted(masks_dir, '{}/{}.geojson'.format(masks_dir, result_name),'building','')
+
 def vectorize_displaced_tiles(tiles, biased_tiles_directory):
     print ('Vectorize displaced tiles',flush=True)
     print (biased_tiles_directory,flush=True)
@@ -24,17 +26,17 @@ def vectorize_displaced_tiles(tiles, biased_tiles_directory):
     directions = {'ne': 45, 'nw': 135, 'se': 225, 'sw': 315}
     for direction in directions:
         biased_dir_template = biased_tiles_directory + '/{}_{}_{}_{}'
-        print(biased_dir_template, flush=True)
-        print (len(tiles), flush=True)
+        # print(biased_dir_template, flush=True)
+        # print (len(tiles), flush=True)
         for tile in tiles:
-            print (tile, flush=True)
+            # print (tile, flush=True)
             biased_directory = biased_dir_template.format(
                 tile.z, tile.x, tile.y, direction)
-            print(biased_directory, flush=True)
+            # print(biased_directory, flush=True)
             if os.path.isdir(biased_directory):
                 geojson_name = '{}_{}_{}'.format(tile.x, tile.y, direction)
-                print(biased_directory, flush=True)
-                print(geojson_name, flush=True)
+                # print(biased_directory, flush=True)
+                # print(geojson_name, flush=True)
                 _vectorize_dir(biased_directory, biased_directory, geojson_name)
 
 
