@@ -1,5 +1,6 @@
 from flask import Flask, request
 from featurization import FeaturizationThread
+import urllib
 import os
 import json
 
@@ -26,14 +27,22 @@ def status():
     return json.dumps(response)
 
 
+def get_params_from_request(request_query_string):
+    query_string = request_query_string.decode("utf-8")
+    query_string = urllib.parse.unquote(query_string)
+    parsed_query = urllib.parse.parse_qs(query_string)
+    directory = parsed_query['directory'][0]
+    biased_tiles = parsed_query['biased_tiles'][0]
+    return directory, biased_tiles
+
+
 @server.route('/featurize')
 def featurize():
     print ('robosat featurize!!!' , flush=True)
     if service_is_busy():
         response = {'status': get_current_status()}
         return json.dumps(response), 503
-    source_images_directory = request.args.get('directory')
-    biased_tiles_directory = request.args.get('biased_tiles')
+    source_images_directory , biased_tiles_directory = get_params_from_request(request.query_string)
     print ('{} {}'.format(source_images_directory, biased_tiles_directory), flush=True)
     global current_thread
     current_thread = FeaturizationThread(source_images_directory, biased_tiles_directory)
