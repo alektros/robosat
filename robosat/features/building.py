@@ -101,20 +101,24 @@ class BuildingHandler:
             shape = shapely.geometry.shape(geometry)
 
             if shape.is_valid:
-                
-                feature = geojson.Feature(geometry=geometry)
-                
-                json_path = os.path.splitext(mask_path)[0].split('_')[0]
-                json_path = json_path + '.json'
-                if os.path.isfile(json_path):
-                    json = self.parse_json(json_path)
-                    tile_name =os.path.splitext(os.path.basename(mask_path))[0]
-                    feature.properties['data'] = json[tile_name]
 
+                feature = geojson.Feature(geometry=geometry)
+
+                self.add_data_to_properties(feature, mask_path)
                 self.features.append(feature)
             else:
                 print("Warning: extracted feature is not valid, skipping", file=sys.stderr)
 
+    def add_data_to_properties(self, feature, mask_path):
+        file_dir = os.path.dirname(mask_path)
+        file_name = os.path.basename(mask_path)
+        json_path = os.path.splitext(mask_path)[0].split('_')[0]
+        json_path = json_path + '.json'
+        json_path = os.path.join(file_dir, file_name.split('_')[0] + '.json')
+        if os.path.isfile(json_path):
+            json = self.parse_json(json_path)
+            tile_name =os.path.splitext(os.path.basename(mask_path))[0]
+            feature.properties['data'] = json[tile_name]
 
     def save(self, out):
         collection = geojson.FeatureCollection(self.features)
